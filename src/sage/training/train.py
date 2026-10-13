@@ -179,7 +179,8 @@ def run_training_pipeline(
     logger.info("=" * 60)
 
     # 7. Training Loop
-    progress = TrainingProgressTracker(total_epochs=training_config.epochs, steps_per_epoch=steps_per_epoch)
+    total_batches = len(train_loader)
+    progress = TrainingProgressTracker(total_epochs=training_config.epochs, batches_per_epoch=total_batches)
 
     try:
         for epoch in range(start_epoch, training_config.epochs + 1):
@@ -191,9 +192,18 @@ def run_training_pipeline(
             for batch_idx, batch in enumerate(train_loader):
                 inputs = {k: v.to(device) for k, v in batch.items() if isinstance(v, torch.Tensor)}
                 outputs = model(**inputs)
+                raw_batch_loss = outputs.loss.item()
                 loss = outputs.loss / training_config.gradient_accumulation_steps
                 loss.backward()
-                accumulated_loss += loss.item()
+                accumulated_loss += raw_batch_loss
+
+                current_lr = scheduler.get_last_lr()[0]
+                progress.update_batch(
+                    batch_loss=raw_batch_loss,
+                    lr=current_lr,
+                    batch_size=training_config.micro_batch_size,
+                    opt_step=global_step
+                )
 
                 if (batch_idx + 1) % training_config.gradient_accumulation_steps == 0:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -201,9 +211,6 @@ def run_training_pipeline(
                     scheduler.step()
                     optimizer.zero_grad()
                     global_step += 1
-
-                    current_lr = scheduler.get_last_lr()[0]
-                    progress.update_step(accumulated_loss, current_lr, batch_size=effective_bs)
                     accumulated_loss = 0.0
 
                     if global_step % training_config.save_every_n_steps == 0:
@@ -214,7 +221,7 @@ def run_training_pipeline(
                             epoch=epoch,
                             global_step=global_step,
                             batch_idx=batch_idx,
-                            metrics={"running_loss": loss.item() * training_config.gradient_accumulation_steps}
+                            metrics={"running_loss": raw_batch_loss}
                         )
 
             progress.close_epoch()
