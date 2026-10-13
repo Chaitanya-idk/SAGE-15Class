@@ -34,10 +34,19 @@ def create_multimodal_batch(batch_items: List[Dict[str, Any]], processor: Any, i
             ]},
             {"role": "assistant", "content": item["ground_truth_text"]},
         ]
-        if hasattr(processor, "apply_chat_template"):
-            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+        # Try processor -> tokenizer -> manual fallback for chat template
+        _tok = getattr(processor, "tokenizer", None)
+        _apply = None
+        for _obj in (processor, _tok):
+            if _obj is not None and hasattr(_obj, "apply_chat_template"):
+                try:
+                    _apply = _obj.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+                    break
+                except Exception:
+                    pass
+        if _apply is not None:
+            text = _apply
         else:
-            # Fallback for _SimpleProcessor — processor will handle padding itself
             text = (
                 f"<|im_start|>system\nYou are an expert precision agriculture AI agent.<|im_end|>\n"
                 f"<|im_start|>user\n<|vision_start|><|image_pad|><|vision_end|>{instruction}<|im_end|>\n"
