@@ -2,7 +2,8 @@ import argparse
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("src"))
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(repo_root, "src"))
 
 from sage.config import load_dataset_config
 from sage.data.manifest import validate_sample_manifest
