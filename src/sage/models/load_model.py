@@ -44,76 +44,96 @@ def resolve_model_path(model_id_or_path: str) -> str:
 
 def load_qwen_processor(path: str) -> Any:
     """Robustly loads Qwen2.5-VL processor handling preprocessor_config naming discrepancies."""
-    from transformers import AutoProcessor
+    import json
+    import os
+    import transformers
+    from transformers import AutoProcessor, AutoTokenizer
 
     # Attempt 1: Standard AutoProcessor
     try:
         return AutoProcessor.from_pretrained(path, trust_remote_code=True)
     except Exception as e:
-        logger.warning(f"Standard AutoProcessor.from_pretrained failed ({e}). Assembling processor components directly...")
+        logger.warning(f"Standard AutoProcessor.from_pretrained failed ({e}). Assembling processor directly...")
 
-    # Attempt 2: Direct component assembly (ImageProcessor + Tokenizer -> Qwen2_5_VLProcessor)
-    from transformers import AutoTokenizer
-
+    # Attempt 2: Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    # Attempt 3: Build image processor from raw config dict (avoids re-reading unrecognized type)
+    _SKIP_KEYS = {"image_processor_type", "processor_class", "model_type", "auto_map"}
+    preprocessor_cfg: Dict[str, Any] = {}
+    cfg_file = os.path.join(path, "preprocessor_config.json")
+    if os.path.exists(cfg_file):
+        try:
+            with open(cfg_file, "r", encoding="utf-8") as _f:
+                preprocessor_cfg = {k: v for k, v in json.load(_f).items() if k not in _SKIP_KEYS}
+        except Exception as _e:
+            logger.warning(f"Could not parse preprocessor_config.json: {_e}")
 
     image_processor = None
-    # Check for Qwen2_5_VLImageProcessor
-    try:
-        from transformers import Qwen2_5_VLImageProcessor
-        image_processor = Qwen2_5_VLImageProcessor.from_pretrained(path, trust_remote_code=True)
-    except Exception:
-        pass
-
-    # Check for Qwen2VLImageProcessor (internal backend class)
-    if image_processor is None:
+    for _cls_name in ("Qwen2_5_VLImageProcessor", "Qwen2VLImageProcessor"):
+        _Cls = getattr(transformers, _cls_name, None)
+        if _Cls is None:
+            continue
         try:
-            from transformers import Qwen2VLImageProcessor
-            image_processor = Qwen2VLImageProcessor.from_pretrained(path, trust_remote_code=True)
-        except Exception:
-            pass
+            image_processor = _Cls(**preprocessor_cfg)
+            logger.info(f"Instantiated {_cls_name} from config dict.")
+            break
+        except Exception as _e:
+            logger.warning(f"{_cls_name}(**cfg) failed ({_e}), retrying with defaults.")
+            try:
+                image_processor = _Cls()
+                logger.info(f"Instantiated {_cls_name} with defaults.")
+                break
+            except Exception:
+                pass
 
-    # Fallback to AutoImageProcessor
-    if image_processor is None:
+    # Attempt 4: Assemble unified processor and return immediately
+    for _proc_name in ("Qwen2_5_VLProcessor", "Qwen2VLProcessor"):
+        _ProcCls = getattr(transformers, _proc_name, None)
+        if _ProcCls is None:
+            continue
         try:
-            from transformers import AutoImageProcessor
-            image_processor = AutoImageProcessor.from_pretrained(path, trust_remote_code=True)
-        except Exception:
-            pass
+            _kw: Dict[str, Any] = {"tokenizer": tokenizer}
+            if image_processor is not None:
+                _kw["image_processor"] = image_processor
+            assembled = _ProcCls(**_kw)
+            logger.info(f"Successfully assembled {assembled.__class__.__name__} from components.")
+            return assembled
+        except Exception as _e:
+            logger.warning(f"Could not instantiate {_proc_name}: {_e}")
 
-    # Assemble unified processor
-    try:
-        from transformers import Qwen2_5_VLProcessor
-        logger.info("Successfully assembled Qwen2_5_VLProcessor from components.")
-        return Qwen2_5_VLProcessor(image_processor=image_processor, tokenizer=tokenizer)
-    except Exception:
-        pass
+    # Attempt 5: Minimal wrapper so training can continue
+    class _SimpleProcessor:
+        def __init__(self, tok: Any, img: Any = None):
+            self.tokenizer = tok
+            self.image_processor = img
+        def __call__(self, text=None, images=None, return_tensors=None, padding=True, **kw):
+            out: Dict[str, Any] = {}
+            if text is not None:
+                out.update(self.tokenizer(text, return_tensors=return_tensors, padding=padding, **kw))
+            if images is not None and self.image_processor is not None:
+                img_out = self.image_processor(images=images, return_tensors=return_tensors)
+                for k, v in img_out.items():
+                    out.setdefault(k, v)
+            return out
+        def decode(self, *a, **k):
+            return self.tokenizer.decode(*a, **k)
+        def batch_decode(self, *a, **k):
+            return self.tokenizer.batch_decode(*a, **k)
 
-    try:
-        from transformers import Qwen2VLProcessor
-        logger.info("Successfully assembled Qwen2VLProcessor from components.")
-        return Qwen2VLProcessor(image_processor=image_processor, tokenizer=tokenizer)
-    except Exception:
-        pass
-
-    # Final retry with AutoProcessor
-    return AutoProcessor.from_pretrained(path, trust_remote_code=True)
+    logger.warning("Using _SimpleProcessor fallback wrapper.")
+    return _SimpleProcessor(tok=tokenizer, img=image_processor)
 
 
 def get_model_class() -> Any:
     """Returns the appropriate Qwen2.5-VL conditional generation model class."""
-    try:
-        from transformers import Qwen2_5_VLForConditionalGeneration
-        return Qwen2_5_VLForConditionalGeneration
-    except ImportError:
-        pass
-
-    try:
-        from transformers import AutoModelForImageTextToText
-        return AutoModelForImageTextToText
-    except ImportError:
-        pass
-
+    for _name in ("Qwen2_5_VLForConditionalGeneration", "Qwen2VLForConditionalGeneration", "AutoModelForImageTextToText"):
+        import transformers as _t
+        _cls = getattr(_t, _name, None)
+        if _cls is not None:
+            return _cls
     from transformers import AutoModelForCausalLM
     return AutoModelForCausalLM
 
