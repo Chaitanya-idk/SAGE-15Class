@@ -59,6 +59,8 @@ def create_multimodal_batch(batch_items: List[Dict[str, Any]], processor: Any, i
         images=images,
         return_tensors="pt",
         padding=True,
+        truncation=True,
+        max_length=1024,
     )
 
     # For causal LM loss, labels are input_ids
@@ -117,13 +119,15 @@ def run_training_pipeline(
     def collate_fn(batch):
         return create_multimodal_batch(batch, processor, training_config.instruction)
 
+    num_workers = getattr(training_config, "num_workers", 4)
     train_loader = DataLoader(
         train_dataset,
         batch_size=training_config.micro_batch_size,
         shuffle=True,
         collate_fn=collate_fn,
-        num_workers=0, # safe across all platforms
-        pin_memory=torch.cuda.is_available()
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
+        persistent_workers=num_workers > 0,
     )
 
     val_loader = DataLoader(
@@ -131,7 +135,9 @@ def run_training_pipeline(
         batch_size=training_config.micro_batch_size,
         shuffle=False,
         collate_fn=collate_fn,
-        num_workers=0
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
+        persistent_workers=num_workers > 0,
     )
 
     # 5. Optimizer & Scheduler

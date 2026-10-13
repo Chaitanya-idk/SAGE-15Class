@@ -89,6 +89,16 @@ def load_qwen_processor(path: str) -> Any:
             except Exception:
                 pass
 
+    # Cap image resolution to bound token count (~256 tokens at 336×336 vs ~578 at default)
+    _MAX_PIXELS = 336 * 336  # 112,896 → ~4× speed-up vs default ~12M
+    _MIN_PIXELS = 4 * 28 * 28
+    if image_processor is not None:
+        for _attr, _val in (("max_pixels", _MAX_PIXELS), ("min_pixels", _MIN_PIXELS)):
+            try:
+                setattr(image_processor, _attr, _val)
+            except Exception:
+                pass
+
     # Attempt 4: Assemble unified processor (requires video_processor for Qwen2.5-VL API)
     video_processor = None
     for _vp_name in ("Qwen2_5_VLVideoProcessor", "Qwen2VLVideoProcessor"):
