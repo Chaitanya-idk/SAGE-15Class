@@ -14,7 +14,8 @@ ENV/
 # Large Data & Datasets
 *.parquet
 !artifacts/metadata/sample_manifest_sample.parquet
-data/
+/data/
+!src/sage/data/
 *.tar
 *.tar.gz
 *.zip
