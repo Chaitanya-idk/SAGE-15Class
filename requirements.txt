@@ -6,9 +6,10 @@ peft>=0.10.0
 bitsandbytes>=0.43.0
 
 # Hugging Face Ecosystem
-transformers>=4.45.0
+transformers>=4.49.0
 datasets>=2.18.0
 huggingface-hub>=0.23.0
+qwen-vl-utils>=0.0.8
 
 # Data Processing & Storage
 pyarrow>=14.0.0
