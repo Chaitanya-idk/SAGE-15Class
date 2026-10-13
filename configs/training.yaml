@@ -1,52 +1,62 @@
 # Training Configuration for Qwen2.5-VL-3B-Instruct QLoRA Fine-Tuning
+# Reference: SAGE Capstone — 15-class crop disease classification
+
 model:
   model_id: "/kaggle/input/models/qwen-lm/qwen2.5-vl/transformers/3b-instruct/2"
-  torch_dtype: "auto" # automatically selects bfloat16 if GPU supports, else float16
-  attn_implementation: "flash_attention_2" # falls back to sdpa if unsupported
+  torch_dtype: "auto"
+  attn_implementation: "flash_attention_2"
   use_gradient_checkpointing: true
+  # Vision token budget — caps image tokens to ~256 per image on T4 (16GB)
+  min_pixels: 3136      # 56 × 56
+  max_pixels: 112896    # 336 × 336  → ~2-3s/batch target
 
 quantization:
   load_in_4bit: true
   bnb_4bit_quant_type: "nf4"
   bnb_4bit_use_double_quant: true
-  bnb_4bit_compute_dtype: "bfloat16" # falls back to float16
+  bnb_4bit_compute_dtype: "bfloat16"
 
 lora:
-  r: 16
-  lora_alpha: 32
+  r: 32
+  lora_alpha: 32          # 1.0× scaling: stable for FP16/BF16 convergence
   lora_dropout: 0.05
   bias: "none"
   task_type: "CAUSAL_LM"
-  target_modules:
+  target_modules:         # Attention-only: fewer params, faster than 7-module set
     - "q_proj"
     - "k_proj"
     - "v_proj"
     - "o_proj"
-    - "gate_proj"
-    - "up_proj"
-    - "down_proj"
 
 training:
   epochs: 2
   micro_batch_size: 4
-  gradient_accumulation_steps: 4
-  learning_rate: 2.0e-4
+  gradient_accumulation_steps: 4   # Effective batch: 16
+  learning_rate: 5.0e-5             # Stable for VLM LoRA; 2e-4 risks NaN on FP16
   min_learning_rate: 1.0e-6
   lr_scheduler_type: "cosine"
   warmup_ratio: 0.05
   weight_decay: 0.01
-  max_grad_norm: 1.0
+  max_grad_norm: 0.5                # Tighter clip: prevents FP16 overflow (>65504)
   seed: 42
-  num_workers: 4
+  num_workers: 2                    # Lower: stable Parquet streaming on Kaggle
   pin_memory: true
-  save_every_n_steps: 100
-  eval_every_n_steps: 200
+  max_training_hours: 8.0           # Hard stop budget
+  save_every_n_steps: 500
+  eval_every_n_steps: 500
   logging_steps: 10
   preflight_smoke_test_samples: 4
 
 prompt:
   instruction: "Identify the crop and plant disease visible in the image. Return the output strictly in the format:\nCrop: <Crop>\nDisease: <Disease>"
   max_new_tokens: 64
+
+evaluation:
+  primary_metric: "macro_f1"
+  eval_subset_size: 250             # ~8min validation vs 59min full
+  full_eval_at_epoch_end: true
+  generation_max_new_tokens: 64
+  temperature: 0.0
 
 checkpointing:
   checkpoint_dir: "artifacts/checkpoints"

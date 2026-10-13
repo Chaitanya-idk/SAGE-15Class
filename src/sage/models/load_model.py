@@ -42,7 +42,7 @@ def resolve_model_path(model_id_or_path: str) -> str:
     return model_id_or_path
 
 
-def load_qwen_processor(path: str) -> Any:
+def load_qwen_processor(path: str, min_pixels: int = 3136, max_pixels: int = 112896) -> Any:
     """Robustly loads Qwen2.5-VL processor handling preprocessor_config naming discrepancies."""
     import json
     import os
@@ -89,11 +89,9 @@ def load_qwen_processor(path: str) -> Any:
             except Exception:
                 pass
 
-    # Cap image resolution to bound token count (~256 tokens at 336×336 vs ~578 at default)
-    _MAX_PIXELS = 336 * 336  # 112,896 → ~4× speed-up vs default ~12M
-    _MIN_PIXELS = 4 * 28 * 28
+    # Cap image resolution to bound token count per config
     if image_processor is not None:
-        for _attr, _val in (("max_pixels", _MAX_PIXELS), ("min_pixels", _MIN_PIXELS)):
+        for _attr, _val in (("max_pixels", max_pixels), ("min_pixels", min_pixels)):
             try:
                 setattr(image_processor, _attr, _val)
             except Exception:
@@ -196,7 +194,11 @@ def load_qwen_vl_model(
     logger.info(f"Resolved model source: {resolved_path}")
 
     # Load processor using robust loader
-    processor = load_qwen_processor(resolved_path)
+    processor = load_qwen_processor(
+        resolved_path,
+        min_pixels=getattr(training_config, "min_pixels", 3136),
+        max_pixels=getattr(training_config, "max_pixels", 112896),
+    )
 
     bnb_config = get_quantization_config(training_config) if (hw["cuda_available"] and training_config.load_in_4bit) else None
 

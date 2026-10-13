@@ -209,9 +209,15 @@ def run_training_pipeline(
     # 7. Training Loop
     total_batches = len(train_loader)
     progress = TrainingProgressTracker(total_epochs=training_config.epochs, batches_per_epoch=total_batches)
+    max_grad_norm = getattr(training_config, "max_grad_norm", 0.5)
+    max_training_hours = getattr(training_config, "max_training_hours", 8.0)
+    training_start_time = time.time()
+    budget_exceeded = False
 
     try:
         for epoch in range(start_epoch, training_config.epochs + 1):
+            if budget_exceeded:
+                break
             logger.info(f"\n--- Starting Epoch {epoch}/{training_config.epochs} ---")
             model.train()
             progress.start_epoch(epoch)
@@ -234,12 +240,19 @@ def run_training_pipeline(
                 )
 
                 if (batch_idx + 1) % training_config.gradient_accumulation_steps == 0:
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
                     optimizer.step()
                     scheduler.step()
                     optimizer.zero_grad()
                     global_step += 1
                     accumulated_loss = 0.0
+
+                    # Hard time-budget stop
+                    elapsed_hours = (time.time() - training_start_time) / 3600.0
+                    if elapsed_hours >= max_training_hours:
+                        logger.warning(f"Training budget of {max_training_hours}h reached at step {global_step}. Stopping.")
+                        budget_exceeded = True
+                        break
 
                     if global_step % training_config.save_every_n_steps == 0:
                         ckpt_mgr.save_checkpoint(

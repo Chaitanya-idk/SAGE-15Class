@@ -113,22 +113,33 @@ class TrainingConfig:
     bnb_4bit_compute_dtype: str = "bfloat16"
 
     # LoRA
-    lora_r: int = 16
+    lora_r: int = 32
     lora_alpha: int = 32
     lora_dropout: float = 0.05
-    target_modules: List[str] = field(default_factory=lambda: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
+    target_modules: List[str] = field(default_factory=lambda: ["q_proj", "k_proj", "v_proj", "o_proj"])
 
     # Loop
     epochs: int = 2
-    micro_batch_size: int = 2
-    gradient_accumulation_steps: int = 8
-    learning_rate: float = 2.0e-4
+    micro_batch_size: int = 4
+    gradient_accumulation_steps: int = 4
+    learning_rate: float = 5.0e-5
     lr_scheduler_type: str = "cosine"
     warmup_ratio: float = 0.05
     weight_decay: float = 0.01
+    max_grad_norm: float = 0.5
     seed: int = 42
-    save_every_n_steps: int = 100
+    num_workers: int = 2
+    pin_memory: bool = True
+    max_training_hours: float = 8.0
+    save_every_n_steps: int = 500
+    eval_every_n_steps: int = 500
+    eval_subset_size: int = 250
     logging_steps: int = 10
+    preflight_smoke_test_samples: int = 4
+
+    # Vision token budget
+    min_pixels: int = 3136    # 56 × 56
+    max_pixels: int = 112896  # 336 × 336
 
     # Prompt
     instruction: str = "Identify the crop and plant disease visible in the image. Return the output strictly in the format:\nCrop: <Crop>\nDisease: <Disease>"
@@ -149,27 +160,36 @@ class TrainingConfig:
         c_sec = data.get("checkpointing", {})
 
         return cls(
-            model_id=m_sec.get("model_id", "Qwen/Qwen2.5-VL-3B-Instruct"),
+            model_id=m_sec.get("model_id", "/kaggle/input/models/qwen-lm/qwen2.5-vl/transformers/3b-instruct/2"),
             torch_dtype=m_sec.get("torch_dtype", "auto"),
             use_gradient_checkpointing=m_sec.get("use_gradient_checkpointing", True),
+            min_pixels=m_sec.get("min_pixels", 3136),
+            max_pixels=m_sec.get("max_pixels", 112896),
             load_in_4bit=q_sec.get("load_in_4bit", True),
             bnb_4bit_quant_type=q_sec.get("bnb_4bit_quant_type", "nf4"),
             bnb_4bit_use_double_quant=q_sec.get("bnb_4bit_use_double_quant", True),
             bnb_4bit_compute_dtype=q_sec.get("bnb_4bit_compute_dtype", "bfloat16"),
-            lora_r=l_sec.get("r", 16),
+            lora_r=l_sec.get("r", 32),
             lora_alpha=l_sec.get("lora_alpha", 32),
             lora_dropout=l_sec.get("lora_dropout", 0.05),
-            target_modules=l_sec.get("target_modules", ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]),
+            target_modules=l_sec.get("target_modules", ["q_proj", "k_proj", "v_proj", "o_proj"]),
             epochs=t_sec.get("epochs", 2),
-            micro_batch_size=t_sec.get("micro_batch_size", 2),
-            gradient_accumulation_steps=t_sec.get("gradient_accumulation_steps", 8),
-            learning_rate=float(t_sec.get("learning_rate", 2.0e-4)),
+            micro_batch_size=t_sec.get("micro_batch_size", 4),
+            gradient_accumulation_steps=t_sec.get("gradient_accumulation_steps", 4),
+            learning_rate=float(t_sec.get("learning_rate", 5.0e-5)),
             lr_scheduler_type=t_sec.get("lr_scheduler_type", "cosine"),
             warmup_ratio=t_sec.get("warmup_ratio", 0.05),
             weight_decay=t_sec.get("weight_decay", 0.01),
+            max_grad_norm=float(t_sec.get("max_grad_norm", 0.5)),
             seed=t_sec.get("seed", 42),
-            save_every_n_steps=t_sec.get("save_every_n_steps", 100),
+            num_workers=t_sec.get("num_workers", 2),
+            pin_memory=t_sec.get("pin_memory", True),
+            max_training_hours=float(t_sec.get("max_training_hours", 8.0)),
+            save_every_n_steps=t_sec.get("save_every_n_steps", 500),
+            eval_every_n_steps=t_sec.get("eval_every_n_steps", 500),
+            eval_subset_size=t_sec.get("eval_subset_size", 250),
             logging_steps=t_sec.get("logging_steps", 10),
+            preflight_smoke_test_samples=t_sec.get("preflight_smoke_test_samples", 4),
             instruction=p_sec.get("instruction", "Identify the crop and plant disease visible in the image. Return the output strictly in the format:\nCrop: <Crop>\nDisease: <Disease>"),
             max_new_tokens=p_sec.get("max_new_tokens", 64),
             checkpoint_dir=c_sec.get("checkpoint_dir", "artifacts/checkpoints"),
