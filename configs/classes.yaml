@@ -1,0 +1,155 @@
+version: "1.0"
+description: "Approved 15 Crop-Disease Classes for Autonomous Precision Agriculture"
+target_classes_count: 15
+
+# Stable, deterministic class IDs mapping
+classes:
+  - class_id: 0
+    crop: "Tomato"
+    disease: "Tomato Leaf Curl Virus"
+    class_name: "Tomato::Tomato Leaf Curl Virus"
+    aliases:
+      crops: ["Tomato", "tomato", "Solanum lycopersicum"]
+      diseases: ["Tomato Leaf Curl Virus", "leaf_curl", "ToLCV", "Tomato yellow leaf curl virus"]
+    raw_labels: ["Tomato/Tomato_Leaf_Curl_Virus"]
+    min_required_samples: 1000
+
+  - class_id: 1
+    crop: "Tomato"
+    disease: "Bacterial Leaf Spot"
+    class_name: "Tomato::Bacterial Leaf Spot"
+    aliases:
+      crops: ["Tomato"]
+      diseases: ["Bacterial Leaf Spot", "bacterial_spot", "Xanthomonas"]
+    raw_labels: ["Tomato/Bacterial_Leaf_Spot"]
+    min_required_samples: 1000
+
+  - class_id: 2
+    crop: "Tomato"
+    disease: "Late Blight"
+    class_name: "Tomato::Late Blight"
+    aliases:
+      crops: ["Tomato"]
+      diseases: ["Late Blight", "late_blight", "Phytophthora infestans"]
+    raw_labels: ["Tomato/Late_Blight"]
+    min_required_samples: 1000
+
+  - class_id: 3
+    crop: "Rice"
+    disease: "Blast"
+    class_name: "Rice::Blast"
+    aliases:
+      crops: ["Rice", "Paddy", "Oryza sativa"]
+      diseases: ["Blast", "rice_blast", "Magnaporthe oryzae"]
+    raw_labels: ["Rice/Blast"]
+    min_required_samples: 1000
+
+  - class_id: 4
+    crop: "Rice"
+    disease: "Brown Spot"
+    class_name: "Rice::Brown Spot"
+    aliases:
+      crops: ["Rice"]
+      diseases: ["Brown Spot", "brown_spot", "Bipolaris oryzae"]
+    raw_labels: ["Rice/Brown_Spot"]
+    min_required_samples: 1000
+
+  - class_id: 5
+    crop: "Rice"
+    disease: "Bacterial Leaf Blight"
+    class_name: "Rice::Bacterial Leaf Blight"
+    aliases:
+      crops: ["Rice"]
+      diseases: ["Bacterial Leaf Blight", "Bacterial Blight", "BLB", "Xanthomonas oryzae"]
+    raw_labels: ["Rice/Bacterial_Leaf_Blight", "Rice/Bacterial_Blight"]
+    min_required_samples: 1000
+
+  - class_id: 6
+    crop: "Corn"
+    disease: "Common Rust"
+    class_name: "Corn::Common Rust"
+    aliases:
+      crops: ["Corn", "Maize", "Zea mays"]
+      diseases: ["Common Rust", "common_rust", "Puccinia sorghi"]
+    raw_labels: ["Corn/Common_Rust", "Maize/Common_Rust"]
+    min_required_samples: 1000
+
+  - class_id: 7
+    crop: "Corn"
+    disease: "Northern Leaf Blight"
+    class_name: "Corn::Northern Leaf Blight"
+    aliases:
+      crops: ["Corn", "Maize"]
+      diseases: ["Northern Leaf Blight", "northern_leaf_blight", "Exserohilum turcicum"]
+    raw_labels: ["Corn/Northern_Leaf_Blight"]
+    min_required_samples: 1000
+
+  - class_id: 8
+    crop: "Potato"
+    disease: "Late Blight"
+    class_name: "Potato::Late Blight"
+    aliases:
+      crops: ["Potato", "Solanum tuberosum"]
+      diseases: ["Late Blight", "late_blight", "Phytophthora infestans"]
+    raw_labels: ["Potato/Late_Blight"]
+    min_required_samples: 1000
+
+  - class_id: 9
+    crop: "Wheat"
+    disease: "Rust"
+    class_name: "Wheat::Rust"
+    aliases:
+      crops: ["Wheat", "Triticum"]
+      diseases: ["Rust", "wheat_rust", "Puccinia"]
+    raw_labels: ["Wheat/Rust"]
+    min_required_samples: 1000
+
+  - class_id: 10
+    crop: "Mango"
+    disease: "Anthracnose"
+    class_name: "Mango::Anthracnose"
+    aliases:
+      crops: ["Mango", "Mangifera indica"]
+      diseases: ["Anthracnose", "anthracnose", "Colletotrichum gloeosporioides"]
+    raw_labels: ["Mango/Anthracnose"]
+    min_required_samples: 1000
+
+  - class_id: 11
+    crop: "Cauliflower"
+    disease: "Black Rot"
+    class_name: "Cauliflower::Black Rot"
+    aliases:
+      crops: ["Cauliflower", "Brassica oleracea"]
+      diseases: ["Black Rot", "black_rot", "Xanthomonas campestris"]
+    raw_labels: ["Cauliflower/Black_Rot"]
+    min_required_samples: 1000
+
+  - class_id: 12
+    crop: "Papaya"
+    disease: "Papaya Mosaic Virus"
+    class_name: "Papaya::Papaya Mosaic Virus"
+    aliases:
+      crops: ["Papaya", "Carica papaya"]
+      diseases: ["Papaya Mosaic Virus", "Mosaic Virus", "Papaya ringspot virus", "mosaic_virus"]
+    raw_labels: ["Papaya/Papaya_Mosaic_Virus", "Papaya/Mosaic_Virus"]
+    min_required_samples: 1000
+
+  - class_id: 13
+    crop: "Sugarcane"
+    disease: "Yellow Leaf"
+    class_name: "Sugarcane::Yellow Leaf"
+    aliases:
+      crops: ["Sugarcane", "Saccharum officinarum"]
+      diseases: ["Yellow Leaf", "yellow_leaf", "Sugarcane yellow leaf virus"]
+    raw_labels: ["Sugarcane/Yellow_Leaf", "Sugarcane/Yellow"]
+    min_required_samples: 1000
+
+  - class_id: 14
+    crop: "Banana"
+    disease: "Panama Disease"
+    class_name: "Banana::Panama Disease"
+    aliases:
+      crops: ["Banana", "Musa"]
+      diseases: ["Panama Disease", "panama_disease", "Fusarium oxysporum"]
+    raw_labels: ["Banana/Panama_Disease"]
+    min_required_samples: 1000

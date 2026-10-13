@@ -1,0 +1,41 @@
+# SAGE Dataset & Sampling Configuration
+dataset:
+  source_type: "huggingface" # "huggingface" or "local_parquet" or "kaggle_mount"
+  hf_repo_id: "tirtho149/SAGE"
+  metadata_file: "sage_metadata.parquet"
+  canonical_mapping_file: "canonical_mapping.json"
+  kaggle_input_dir: "/kaggle/input/sage" # default if mounted in Kaggle
+  cache_dir: "artifacts/cache"
+  max_cache_size_gb: 10.0
+
+sampling:
+  seed: 42
+  target_train_images_per_class: 800
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  group_by_columns: ["source", "filename"]
+  deduplication:
+    exact_hash: true
+    filename_group: true
+  min_samples_per_split:
+    val: 50
+    test: 50
+
+preprocessing:
+  target_image_size: [488, 488]
+  preserve_aspect_ratio: true
+  interpolation: "bicubic" # bicubic or bilinear or lanczos
+  apply_exif_orientation: true
+  to_rgb: true
+  max_retries: 3
+  timeout_seconds: 15
+
+manifest:
+  output_dir: "artifacts/metadata"
+  manifest_path: "artifacts/metadata/sample_manifest.parquet"
+  class_registry_path: "artifacts/metadata/class_registry.json"
+  class_selection_path: "artifacts/metadata/class_selection.csv"
+  split_summary_path: "artifacts/metadata/split_summary.json"
+  data_quality_report_path: "artifacts/metadata/data_quality_report.md"

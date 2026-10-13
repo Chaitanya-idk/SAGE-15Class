@@ -1,0 +1,87 @@
+{
+  "timestamp_utc": "2026-10-13T09:44:19.440476+00:00",
+  "total_selected_samples": 17145,
+  "split_counts": {
+    "train": 12000,
+    "test": 2580,
+    "val": 2565
+  },
+  "classes_count": 15,
+  "per_class_split_distribution": {
+    "Banana::Panama Disease": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Cauliflower::Black Rot": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Corn::Common Rust": {
+      "test": 171,
+      "train": 799,
+      "val": 173
+    },
+    "Corn::Northern Leaf Blight": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Mango::Anthracnose": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Papaya::Papaya Mosaic Virus": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Potato::Late Blight": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Rice::Bacterial Leaf Blight": {
+      "test": 167,
+      "train": 800,
+      "val": 176
+    },
+    "Rice::Blast": {
+      "test": 171,
+      "train": 807,
+      "val": 165
+    },
+    "Rice::Brown Spot": {
+      "test": 177,
+      "train": 797,
+      "val": 169
+    },
+    "Sugarcane::Yellow Leaf": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Tomato::Bacterial Leaf Spot": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Tomato::Late Blight": {
+      "test": 172,
+      "train": 800,
+      "val": 171
+    },
+    "Tomato::Tomato Leaf Curl Virus": {
+      "test": 172,
+      "train": 799,
+      "val": 172
+    },
+    "Wheat::Rust": {
+      "test": 174,
+      "train": 798,
+      "val": 171
+    }
+  }
+}

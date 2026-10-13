@@ -1,0 +1,32 @@
+# Evaluation Configuration
+evaluation:
+  batch_size: 4
+  splits: ["val", "test"]
+  temperature: 0.0 # deterministic greedy decoding
+  max_new_tokens: 64
+  
+metrics:
+  - "overall_accuracy"
+  - "crop_accuracy"
+  - "disease_accuracy"
+  - "exact_match_accuracy"
+  - "macro_precision"
+  - "macro_recall"
+  - "macro_f1"
+  - "weighted_f1"
+  - "per_class_metrics"
+  - "confusion_matrix"
+  - "top_confusions"
+
+outputs:
+  reports_dir: "artifacts/reports"
+  predictions_dir: "artifacts/predictions"
+  final_report_md: "artifacts/reports/final_report.md"
+  final_report_json: "artifacts/reports/final_report.json"
+  classification_report_csv: "artifacts/reports/classification_report.csv"
+  class_metrics_csv: "artifacts/reports/class_metrics.csv"
+  crop_metrics_csv: "artifacts/reports/crop_metrics.csv"
+  top_confusions_csv: "artifacts/reports/top_confusions.csv"
+  failures_csv: "artifacts/reports/failures.csv"
+  confusion_matrix_png: "artifacts/reports/confusion_matrix.png"
+  test_predictions_parquet: "artifacts/predictions/test_predictions.parquet"

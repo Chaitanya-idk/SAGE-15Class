@@ -1,0 +1,16 @@
+class_id,crop,disease,class_name,available_records,valid_unique_groups,duplicate_records,selected_total,train_count,val_count,test_count,selection_status,target_train_met
+0,Tomato,Tomato Leaf Curl Virus,Tomato::Tomato Leaf Curl Virus,50027,49514,513,1143,799,172,172,APPROVED,False
+1,Tomato,Bacterial Leaf Spot,Tomato::Bacterial Leaf Spot,27205,27205,0,1143,800,171,172,APPROVED,True
+2,Tomato,Late Blight,Tomato::Late Blight,23469,23469,0,1143,800,171,172,APPROVED,True
+3,Rice,Blast,Rice::Blast,7411,6108,1303,1143,807,165,171,APPROVED,True
+4,Rice,Brown Spot,Rice::Brown Spot,5495,5181,314,1143,797,169,177,APPROVED,False
+5,Rice,Bacterial Leaf Blight,Rice::Bacterial Leaf Blight,4696,4002,694,1143,800,176,167,APPROVED,True
+6,Corn,Common Rust,Corn::Common Rust,20487,20371,116,1143,799,173,171,APPROVED,False
+7,Corn,Northern Leaf Blight,Corn::Northern Leaf Blight,10764,10764,0,1143,800,171,172,APPROVED,True
+8,Potato,Late Blight,Potato::Late Blight,11615,11615,0,1143,800,171,172,APPROVED,True
+9,Wheat,Rust,Wheat::Rust,5579,3735,1844,1143,798,171,174,APPROVED,False
+10,Mango,Anthracnose,Mango::Anthracnose,2600,2600,0,1143,800,171,172,APPROVED,True
+11,Cauliflower,Black Rot,Cauliflower::Black Rot,3245,3245,0,1143,800,171,172,APPROVED,True
+12,Papaya,Papaya Mosaic Virus,Papaya::Papaya Mosaic Virus,2732,2732,0,1143,800,171,172,APPROVED,True
+13,Sugarcane,Yellow Leaf,Sugarcane::Yellow Leaf,1528,1528,0,1143,800,171,172,APPROVED,True
+14,Banana,Panama Disease,Banana::Panama Disease,1465,1465,0,1143,800,171,172,APPROVED,True

@@ -1,0 +1,43 @@
+{
+  "discovery_timestamp_utc": "2026-10-13T09:33:34.146595+00:00",
+  "dataset_name": "tirtho149/SAGE",
+  "dataset_revision": "main",
+  "total_shards_reported": 48,
+  "total_records_enumerated": 820504,
+  "records_with_valid_crop": 820504,
+  "records_with_valid_disease": 820504,
+  "records_with_valid_crop_and_disease": 820504,
+  "missing_fields_breakdown": {
+    "crop": 0,
+    "disease": 0,
+    "plant_organ": 367586,
+    "visual_symptoms": 367586,
+    "pathogen": 367586,
+    "disease_type": 367586,
+    "symptom_source": 368123,
+    "symptom_quote": 368123,
+    "source": 0,
+    "filename": 0,
+    "raw_label": 0
+  },
+  "candidate_class_record_counts": {
+    "Tomato::Tomato Leaf Curl Virus": 50027,
+    "Tomato::Bacterial Leaf Spot": 27205,
+    "Tomato::Late Blight": 23469,
+    "Rice::Blast": 7411,
+    "Rice::Brown Spot": 5495,
+    "Rice::Bacterial Leaf Blight": 4696,
+    "Corn::Common Rust": 20487,
+    "Corn::Northern Leaf Blight": 10764,
+    "Potato::Late Blight": 11615,
+    "Wheat::Rust": 5579,
+    "Mango::Anthracnose": 2600,
+    "Cauliflower::Black Rot": 3245,
+    "Papaya::Papaya Mosaic Virus": 2732,
+    "Sugarcane::Yellow Leaf": 1528,
+    "Banana::Panama Disease": 1465
+  },
+  "unique_crops_count": 335,
+  "unique_diseases_count": 526,
+  "inventory_status": "COMPLETE_EXACT_SCAN"
+}

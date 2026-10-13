@@ -1,0 +1,33 @@
+{
+  "dataset_name": "tirtho149/SAGE",
+  "dataset_revision": "main",
+  "discovery_timestamp_utc": "2026-10-13T09:33:34.146595+00:00",
+  "column_types": {
+    "crop": "string",
+    "disease": "string",
+    "plant_organ": "string",
+    "visual_symptoms": "string",
+    "pathogen": "string",
+    "disease_type": "string",
+    "symptom_source": "string",
+    "symptom_quote": "string",
+    "source": "string",
+    "filename": "string",
+    "raw_label": "string"
+  },
+  "present_columns": [
+    "crop",
+    "disease",
+    "plant_organ",
+    "visual_symptoms",
+    "pathogen",
+    "disease_type",
+    "symptom_source",
+    "symptom_quote",
+    "source",
+    "filename",
+    "raw_label"
+  ],
+  "total_records_discovered": 820504,
+  "schema_valid": true
+}

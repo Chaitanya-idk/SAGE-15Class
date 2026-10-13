@@ -1,0 +1,45 @@
+# Python & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.env
+!.env.example
+
+# Large Data & Datasets
+*.parquet
+!artifacts/metadata/sample_manifest_sample.parquet
+data/
+*.tar
+*.tar.gz
+*.zip
+
+# Checkpoints & Model Weights
+checkpoints/
+artifacts/checkpoints/
+*.pt
+*.pth
+*.bin
+*.safetensors
+adapter_model/
+
+# Artifacts & Outputs
+artifacts/predictions/
+artifacts/logs/
+artifacts/cache/
+*.log
+
+# Jupyter & IDEs
+.ipynb_checkpoints
+.vscode/
+.idea/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
