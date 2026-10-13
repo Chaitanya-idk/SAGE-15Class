@@ -89,20 +89,36 @@ def load_qwen_processor(path: str) -> Any:
             except Exception:
                 pass
 
-    # Attempt 4: Assemble unified processor and return immediately
+    # Attempt 4: Assemble unified processor (requires video_processor for Qwen2.5-VL API)
+    video_processor = None
+    for _vp_name in ("Qwen2_5_VLVideoProcessor", "Qwen2VLVideoProcessor"):
+        _VPCls = getattr(transformers, _vp_name, None)
+        if _VPCls is not None:
+            try:
+                video_processor = _VPCls()
+                logger.info(f"Instantiated {_vp_name} with defaults.")
+                break
+            except Exception:
+                pass
+
     for _proc_name in ("Qwen2_5_VLProcessor", "Qwen2VLProcessor"):
         _ProcCls = getattr(transformers, _proc_name, None)
         if _ProcCls is None:
             continue
-        try:
-            _kw: Dict[str, Any] = {"tokenizer": tokenizer}
-            if image_processor is not None:
-                _kw["image_processor"] = image_processor
-            assembled = _ProcCls(**_kw)
-            logger.info(f"Successfully assembled {assembled.__class__.__name__} from components.")
-            return assembled
-        except Exception as _e:
-            logger.warning(f"Could not instantiate {_proc_name}: {_e}")
+        # Build kwargs progressively to handle varying constructor signatures
+        for _kw in (
+            {"tokenizer": tokenizer, "image_processor": image_processor, "video_processor": video_processor},
+            {"tokenizer": tokenizer, "image_processor": image_processor},
+            {"tokenizer": tokenizer},
+        ):
+            if any(v is None for v in _kw.values()):
+                continue
+            try:
+                assembled = _ProcCls(**_kw)
+                logger.info(f"Successfully assembled {assembled.__class__.__name__} from components.")
+                return assembled
+            except Exception as _e:
+                logger.warning(f"Could not instantiate {_proc_name} with kwargs {list(_kw.keys())}: {_e}")
 
     # Attempt 5: Minimal wrapper so training can continue
     class _SimpleProcessor:

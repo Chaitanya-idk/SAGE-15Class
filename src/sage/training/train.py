@@ -24,13 +24,26 @@ def create_multimodal_batch(batch_items: List[Dict[str, Any]], processor: Any, i
     texts = []
 
     for item in batch_items:
-        # Structured user instruction and assistant ground-truth response
-        prompt = (
-            f"<|im_start|>system\nYou are an expert precision agriculture AI agent.<|im_end|>\n"
-            f"<|im_start|>user\n<|vision_start|><|image_pad|><|vision_end|>{instruction}<|im_end|>\n"
-            f"<|im_start|>assistant\n{item['ground_truth_text']}<|im_end|>"
-        )
-        texts.append(prompt)
+        # Use apply_chat_template if available so the processor correctly expands
+        # <|vision_start|><|image_pad|>...<|vision_end|> to match actual pixel features.
+        messages = [
+            {"role": "system", "content": "You are an expert precision agriculture AI agent."},
+            {"role": "user", "content": [
+                {"type": "image", "image": item["image"]},
+                {"type": "text", "text": instruction},
+            ]},
+            {"role": "assistant", "content": item["ground_truth_text"]},
+        ]
+        if hasattr(processor, "apply_chat_template"):
+            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+        else:
+            # Fallback for _SimpleProcessor — processor will handle padding itself
+            text = (
+                f"<|im_start|>system\nYou are an expert precision agriculture AI agent.<|im_end|>\n"
+                f"<|im_start|>user\n<|vision_start|><|image_pad|><|vision_end|>{instruction}<|im_end|>\n"
+                f"<|im_start|>assistant\n{item['ground_truth_text']}<|im_end|>"
+            )
+        texts.append(text)
 
     inputs = processor(
         text=texts,
