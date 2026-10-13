@@ -60,7 +60,7 @@ def create_multimodal_batch(batch_items: List[Dict[str, Any]], processor: Any, i
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=1024,
+        max_length=512,
     )
 
     # For causal LM loss, labels are input_ids
@@ -80,6 +80,12 @@ def run_training_pipeline(
     set_seed(training_config.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using compute device: {device}")
+
+    # TF32 — free ~1.5× throughput on Ampere/Turing (T4, A100, V100) with no accuracy cost
+    if torch.cuda.is_available():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        torch.backends.cudnn.benchmark = True
 
     # 1. Datasets & DataLoaders
     train_dataset = SAGEImageDataset(
@@ -227,6 +233,13 @@ def run_training_pipeline(
                 inputs = {k: v.to(device) for k, v in batch.items() if isinstance(v, torch.Tensor)}
                 outputs = model(**inputs)
                 raw_batch_loss = outputs.loss.item()
+
+                # NaN/Inf guard — skip batch to prevent weight corruption
+                if not torch.isfinite(outputs.loss):
+                    logger.warning(f"NaN/Inf loss at batch {batch_idx} (loss={raw_batch_loss:.4f}). Skipping batch.")
+                    optimizer.zero_grad()
+                    continue
+
                 loss = outputs.loss / training_config.gradient_accumulation_steps
                 loss.backward()
                 accumulated_loss += raw_batch_loss

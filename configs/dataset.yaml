@@ -24,7 +24,7 @@ sampling:
     test: 50
 
 preprocessing:
-  target_image_size: [336, 336]
+  target_image_size: [224, 224]
   preserve_aspect_ratio: true
   interpolation: "bicubic" # bicubic or bilinear or lanczos
   apply_exif_orientation: true
